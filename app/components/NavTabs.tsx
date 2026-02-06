@@ -89,10 +89,7 @@ export default function NavTabs() {
           })}
         </nav>
 
-        <div className="drawerFooter">
-          <div className="drawerFooterLine">IG: @amiasbakery</div>
-          <div className="drawerFooterLine">amiasbakery@gmail.com</div>
-        </div>
+       
       </aside>
     </>
   );
