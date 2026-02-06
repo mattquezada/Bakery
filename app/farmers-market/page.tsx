@@ -2,5 +2,5 @@
 import MenuPage from "../components/MenuPage";
 
 export default function FarmersMarket() {
-  return <MenuPage pageKey="farmers_market" heroTitle="FARMERS" heroSubtitle="MARKET MENU" />;
+  return <MenuPage pageKey="farmers_market" heroTitle="FARMERS MARKET" heroSubtitle="Amias Bakery" />;
 }

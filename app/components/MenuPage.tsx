@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { MenuItem, MenuPageKey } from "../lib/types";
 import { fetchMenuItems } from "../lib/menuQueries";
 import { getOrderUrl } from "../lib/orderLink";
+import ContactFooter from "./ContactFooter";
 
 export default function MenuPage({
   pageKey,
@@ -17,6 +18,8 @@ export default function MenuPage({
 }) {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const showOrderButton = pageKey !== "farmers_market";
 
   useEffect(() => {
     fetchMenuItems(pageKey)
@@ -44,100 +47,63 @@ export default function MenuPage({
       </div>
 
       <div className="page">
-        {loading && <div>Loading…</div>}
-
-        {!loading && grouped.length === 0 && (
-          <div style={{ color: "#666" }}>No items yet.</div>
+        {/* SINGLE PAGE-LEVEL ORDER BUTTON */}
+        {showOrderButton && (
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 18 }}>
+            <button
+              className="btn btnPrimary"
+              onClick={() => window.open(getOrderUrl(), "_blank")}
+            >
+              Order via Google Forms
+            </button>
+          </div>
         )}
+
+        {loading && <div>Loading…</div>}
 
         {grouped.map(([section, sectionItems]) => (
           <section key={section}>
-            {/* SECTION HEADER */}
             <div className="sectionHead">
               <div className="sectionTitle">{section}</div>
             </div>
 
             <div className="sectionLine" />
 
-            {sectionItems.map((it) => {
-              const price = it.prices?.[0] ?? "";
-
-              return (
-                <div className="row" key={it.id}>
-                  {/* LEFT SIDE: IMAGE + TEXT */}
-                  <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                    {it.image_url ? (
-                      <img
-                        src={it.image_url}
-                        alt={it.name}
-                        loading="lazy"
-                        style={{
-                          width: 84,
-                          height: 84,
-                          objectFit: "cover",
-                          borderRadius: 10,
-                          border: "1px solid #e7e7e7",
-                          flex: "0 0 auto"
-                        }}
-                      />
-                    ) : null}
-
-                    <div>
-                      <div className="itemName">{it.name}</div>
-                      {it.description ? (
-                        <div className="itemDesc">{it.description}</div>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  {/* RIGHT SIDE: PRICE + ORDER (TIGHT + RIGHT-ALIGNED) */}
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-end",
-                      justifyContent: "center"
-                    }}
-                  >
-                    {/* PRICE */}
-                    <div
+            {sectionItems.map((it) => (
+              <div className="row" key={it.id}>
+                {/* LEFT */}
+                <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                  {it.image_url && (
+                    <img
+                      src={it.image_url}
+                      alt={it.name}
+                      loading="lazy"
                       style={{
-                        fontWeight: 700,
-                        fontSize: 18,
-                        marginBottom: 6,
-                        textAlign: "right"
+                        width: 84,
+                        height: 84,
+                        objectFit: "cover",
+                        borderRadius: 10,
+                        border: "1px solid #e7e7e7"
                       }}
-                    >
-                      {price}
-                    </div>
+                    />
+                  )}
 
-                    {/* ORDER BUTTON */}
-                    <button
-                      className="btn btnPrimary"
-                      onClick={() => {
-                        window.open(getOrderUrl(), "_blank");
-                      }}
-                    >
-                      Order
-                    </button>
+                  <div>
+                    <div className="itemName">{it.name}</div>
+                    {it.description && <div className="itemDesc">{it.description}</div>}
                   </div>
                 </div>
-              );
-            })}
+
+                {/* RIGHT */}
+                <div style={{ fontWeight: 700, fontSize: 18 }}>
+                  {it.prices?.[0]}
+                </div>
+              </div>
+            ))}
           </section>
         ))}
 
-        {/* CONTACT BAR */}
-        <div className="contactBar">
-          <div className="contactLeft">Contact Us</div>
-          <div className="contactMid">IG: @amiasbakery</div>
-          <div className="contactRight">
-            Email:
-            <div style={{ fontWeight: 700 }}>amiasbakery@gmail.com</div>
-          </div>
-        </div>
-
-        <div className="note">*Prices subject to change.</div>
+        <ContactFooter />
       </div>
     </main>
   );
