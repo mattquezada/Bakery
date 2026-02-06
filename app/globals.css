@@ -359,3 +359,90 @@ a{ color:inherit; text-decoration:none; }
 .contactLink:hover {
   text-decoration: underline;
 }
+/* =========================
+   Mobile responsive layout
+   ========================= */
+
+/* Prevent horizontal scroll */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Make page padding smaller on mobile */
+@media (max-width: 768px) {
+  .page {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  /* Hero text smaller */
+  .heroTitle {
+    font-size: 44px;     /* adjust if needed */
+    letter-spacing: .08em;
+  }
+
+  .heroSubtitle {
+    font-size: 12px;
+    letter-spacing: .30em;
+  }
+
+  /* Section title smaller */
+  .sectionTitle {
+    font-size: 22px;
+    letter-spacing: .10em;
+  }
+
+  /* Stack each menu row (image/text on top, price under) */
+  .row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+
+  /* Make images slightly smaller on mobile */
+  .row img {
+    width: 72px !important;
+    height: 72px !important;
+  }
+
+  /* Make the right-side price align left on mobile */
+  .row > div:last-child {
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  /* Buttons full width and easier to tap */
+  .btn {
+    width: 100%;
+    max-width: 320px;
+    height: 44px;
+    font-size: 16px;
+  }
+
+  /* Contact bar stacks */
+  .contactBar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .contactLeft,
+  .contactMid,
+  .contactRight {
+    justify-self: start;
+  }
+}
+
+/* Extra-small phones */
+@media (max-width: 420px) {
+  .heroTitle {
+    font-size: 38px;
+  }
+
+  .sectionTitle {
+    font-size: 20px;
+  }
+}
