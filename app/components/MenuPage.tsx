@@ -28,13 +28,39 @@ export default function MenuPage({
   }, [pageKey]);
 
   const grouped = useMemo(() => {
-    const map = new Map<string, MenuItem[]>();
-    for (const it of items) {
-      if (!map.has(it.section)) map.set(it.section, []);
-      map.get(it.section)!.push(it);
-    }
-    return Array.from(map.entries());
-  }, [items]);
+  const map = new Map<string, MenuItem[]>();
+
+  for (const it of items) {
+    if (!map.has(it.section)) map.set(it.section, []);
+    map.get(it.section)!.push(it);
+  }
+
+  const preferredOrder = [
+    "cookies",
+    "sourdough loaves",
+    "cinnamon rolls"
+  ];
+
+  const entries = Array.from(map.entries());
+
+  entries.sort(([a], [b]) => {
+    const aKey = a.toLowerCase().trim();
+    const bKey = b.toLowerCase().trim();
+
+    const aIdx = preferredOrder.indexOf(aKey);
+    const bIdx = preferredOrder.indexOf(bKey);
+
+    // sections not in the list go to the bottom, alphabetical
+    if (aIdx === -1 && bIdx === -1) return aKey.localeCompare(bKey);
+    if (aIdx === -1) return 1;
+    if (bIdx === -1) return -1;
+
+    return aIdx - bIdx;
+  });
+
+  return entries;
+}, [items]);
+
 
   return (
     <main>

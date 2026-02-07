@@ -29,8 +29,6 @@ export default function ContactFooter() {
           </div>
         </div>
       </div>
-
-      <div className="note">*Prices subject to change.</div>
     </>
   );
 }
