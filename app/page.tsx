@@ -16,7 +16,7 @@ export default function HomePage() {
     <main>
       <div className="hero">
         <div>
-          <h1 className="heroTitle">ABOUT</h1>
+          <h1 className="heroTitle">HOME</h1>
           <div className="heroSubtitle">AMIAS BAKERY</div>
         </div>
       </div>
