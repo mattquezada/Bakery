@@ -28,39 +28,34 @@ export default function MenuPage({
   }, [pageKey]);
 
   const grouped = useMemo(() => {
-  const map = new Map<string, MenuItem[]>();
+    const map = new Map<string, MenuItem[]>();
 
-  for (const it of items) {
-    if (!map.has(it.section)) map.set(it.section, []);
-    map.get(it.section)!.push(it);
-  }
+    for (const it of items) {
+      if (!map.has(it.section)) map.set(it.section, []);
+      map.get(it.section)!.push(it);
+    }
 
-  const preferredOrder = [
-    "cookies",
-    "sourdough loaves",
-    "cinnamon rolls"
-  ];
+    const preferredOrder = ["cookies", "sourdough loaves", "cinnamon rolls"];
 
-  const entries = Array.from(map.entries());
+    const entries = Array.from(map.entries());
 
-  entries.sort(([a], [b]) => {
-    const aKey = a.toLowerCase().trim();
-    const bKey = b.toLowerCase().trim();
+    entries.sort(([a], [b]) => {
+      const aKey = a.toLowerCase().trim();
+      const bKey = b.toLowerCase().trim();
 
-    const aIdx = preferredOrder.indexOf(aKey);
-    const bIdx = preferredOrder.indexOf(bKey);
+      const aIdx = preferredOrder.indexOf(aKey);
+      const bIdx = preferredOrder.indexOf(bKey);
 
-    // sections not in the list go to the bottom, alphabetical
-    if (aIdx === -1 && bIdx === -1) return aKey.localeCompare(bKey);
-    if (aIdx === -1) return 1;
-    if (bIdx === -1) return -1;
+      // sections not in the list go to the bottom, alphabetical
+      if (aIdx === -1 && bIdx === -1) return aKey.localeCompare(bKey);
+      if (aIdx === -1) return 1;
+      if (bIdx === -1) return -1;
 
-    return aIdx - bIdx;
-  });
+      return aIdx - bIdx;
+    });
 
-  return entries;
-}, [items]);
-
+    return entries;
+  }, [items]);
 
   return (
     <main>
@@ -76,10 +71,7 @@ export default function MenuPage({
         {/* SINGLE PAGE-LEVEL ORDER BUTTON */}
         {showOrderButton && (
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 18 }}>
-            <button
-              className="btn btnPrimary"
-              onClick={() => window.open(getOrderUrl(), "_blank")}
-            >
+            <button className="btn btnPrimary" onClick={() => window.open(getOrderUrl(), "_blank")}>
               Order via Google Forms
             </button>
           </div>
@@ -116,14 +108,18 @@ export default function MenuPage({
 
                   <div>
                     <div className="itemName">{it.name}</div>
-                    {it.description && <div className="itemDesc">{it.description}</div>}
+
+                    {/* ✅ ONLY CHANGE: preserve line breaks from Supabase */}
+                    {it.description && (
+                      <div className="itemDesc" style={{ whiteSpace: "pre-line" }}>
+                        {it.description}
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* RIGHT */}
-                <div style={{ fontWeight: 700, fontSize: 18 }}>
-                  {it.prices?.[0]}
-                </div>
+                <div style={{ fontWeight: 700, fontSize: 18 }}>{it.prices?.[0]}</div>
               </div>
             ))}
           </section>
