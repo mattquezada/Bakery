@@ -36,7 +36,6 @@ export default function MenuPage({
     }
 
     const preferredOrder = ["cookies", "sourdough loaves", "cinnamon rolls"];
-
     const entries = Array.from(map.entries());
 
     entries.sort(([a], [b]) => {
@@ -46,11 +45,9 @@ export default function MenuPage({
       const aIdx = preferredOrder.indexOf(aKey);
       const bIdx = preferredOrder.indexOf(bKey);
 
-      // sections not in the list go to the bottom, alphabetical
       if (aIdx === -1 && bIdx === -1) return aKey.localeCompare(bKey);
       if (aIdx === -1) return 1;
       if (bIdx === -1) return -1;
-
       return aIdx - bIdx;
     });
 
@@ -79,51 +76,99 @@ export default function MenuPage({
 
         {loading && <div>Loading…</div>}
 
-        {grouped.map(([section, sectionItems]) => (
-          <section key={section}>
-            <div className="sectionHead">
-              <div className="sectionTitle">{section}</div>
-            </div>
+        {!loading &&
+          grouped.map(([section, sectionItems]) => (
+            <section key={section}>
+              {/* SECTION HEADER: Left title, right Tap/Cash */}
+              <div
+                className="sectionHead"
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto",
+                  alignItems: "end"
+                }}
+              >
+                <div className="sectionTitle">{section}</div>
 
-            <div className="sectionLine" />
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "90px 90px",
+                    gap: 18,
+                    textAlign: "center",
+                    fontWeight: 700,
+                    letterSpacing: ".08em",
+                    textTransform: "uppercase",
+                    fontSize: 14
+                  }}
+                >
+                  <div>Price</div>
+                  <div>Cash Discount</div>
+                </div>
+              </div>
 
-            {sectionItems.map((it) => (
-              <div className="row" key={it.id}>
-                {/* LEFT */}
-                <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                  {it.image_url && (
-                    <img
-                      src={it.image_url}
-                      alt={it.name}
-                      loading="lazy"
-                      style={{
-                        width: 84,
-                        height: 84,
-                        objectFit: "cover",
-                        borderRadius: 10,
-                        border: "1px solid #e7e7e7"
-                      }}
-                    />
-                  )}
+              <div className="sectionLine" />
 
-                  <div>
-                    <div className="itemName">{it.name}</div>
-
-                    {/* ✅ ONLY CHANGE: preserve line breaks from Supabase */}
-                    {it.description && (
-                      <div className="itemDesc" style={{ whiteSpace: "pre-line" }}>
-                        {it.description}
-                      </div>
+              {sectionItems.map((it) => (
+                <div
+                  className="row"
+                  key={it.id}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto",
+                    gap: 18,
+                    padding: "14px 0",
+                    alignItems: "center"
+                  }}
+                >
+                  {/* LEFT */}
+                  <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                    {it.image_url && (
+                      <img
+                        src={it.image_url}
+                        alt={it.name}
+                        loading="lazy"
+                        style={{
+                          width: 84,
+                          height: 84,
+                          objectFit: "cover",
+                          borderRadius: 10,
+                          border: "1px solid #e7e7e7",
+                          flex: "0 0 auto"
+                        }}
+                      />
                     )}
+
+                    <div>
+                      <div className="itemName">{it.name}</div>
+
+                      {/* ✅ paragraph breaks from Supabase */}
+                      {it.description && (
+                        <div className="itemDesc" style={{ whiteSpace: "pre-line" }}>
+                          {it.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* RIGHT: Tap/Cash prices aligned under headers */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "90px 90px",
+                      gap: 18,
+                      textAlign: "center",
+                      fontWeight: 700,
+                      fontSize: 18
+                    }}
+                  >
+                    <div>{it.prices?.[0] ?? ""}</div>
+                    <div>{it.prices?.[1] ?? ""}</div>
                   </div>
                 </div>
-
-                {/* RIGHT */}
-                <div style={{ fontWeight: 700, fontSize: 18 }}>{it.prices?.[0]}</div>
-              </div>
-            ))}
-          </section>
-        ))}
+              ))}
+            </section>
+          ))}
 
         <ContactFooter />
       </div>
