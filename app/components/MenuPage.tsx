@@ -19,7 +19,11 @@ export default function MenuPage({
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const showOrderButton = pageKey !== "farmers_market";
+  // ✅ Farmers market: no payment options at all
+  const showPaymentOptions = pageKey !== "farmers_market";
+
+  // ✅ Farmers market: hide price/cash columns entirely
+  const isFarmersMarket = pageKey === "farmers_market";
 
   useEffect(() => {
     fetchMenuItems(pageKey)
@@ -65,11 +69,31 @@ export default function MenuPage({
       </div>
 
       <div className="page">
-        {/* SINGLE PAGE-LEVEL ORDER BUTTON */}
-        {showOrderButton && (
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 18 }}>
-            <button className="btn btnPrimary" onClick={() => window.open(getOrderUrl(), "_blank")}>
-              Order via Google Forms
+        {/* ✅ TWO BUTTONS: Card checkout + Google Form (NOT on farmers market) */}
+        {showPaymentOptions && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 12,
+              marginBottom: 18,
+              flexWrap: "wrap"
+            }}
+          >
+            <a
+              href={`/checkout?page=${pageKey}`}
+              className="btn btnPrimary"
+              style={{ display: "inline-flex", alignItems: "center" }}
+            >
+              Pay by Card
+            </a>
+
+            <button
+              className="btn btnPrimary"
+              style={{ display: "inline-flex", alignItems: "center" }}
+              onClick={() => window.open(getOrderUrl(), "_blank")}
+            >
+              Order via Google Form
             </button>
           </div>
         )}
@@ -79,32 +103,35 @@ export default function MenuPage({
         {!loading &&
           grouped.map(([section, sectionItems]) => (
             <section key={section}>
-              {/* SECTION HEADER: Left title, right Tap/Cash */}
+              {/* SECTION HEADER: Left title, right Tap/Cash (NOT on farmers market) */}
               <div
                 className="sectionHead"
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr auto",
+                  gridTemplateColumns: isFarmersMarket ? "1fr" : "1fr auto",
                   alignItems: "end"
                 }}
               >
                 <div className="sectionTitle">{section}</div>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "90px 90px",
-                    gap: 18,
-                    textAlign: "center",
-                    fontWeight: 700,
-                    letterSpacing: ".08em",
-                    textTransform: "uppercase",
-                    fontSize: 14
-                  }}
-                >
-                  <div>Price</div>
-                  <div>Cash Discount</div>
-                </div>
+                {/* ✅ Hide header labels ONLY for farmers market */}
+                {!isFarmersMarket && (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "90px 90px",
+                      gap: 18,
+                      textAlign: "center",
+                      fontWeight: 700,
+                      letterSpacing: ".08em",
+                      textTransform: "uppercase",
+                      fontSize: 14
+                    }}
+                  >
+                    <div>Price</div>
+                    <div>Cash Discount</div>
+                  </div>
+                )}
               </div>
 
               <div className="sectionLine" />
@@ -115,7 +142,7 @@ export default function MenuPage({
                   key={it.id}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr auto",
+                    gridTemplateColumns: isFarmersMarket ? "1fr" : "1fr auto",
                     gap: 18,
                     padding: "14px 0",
                     alignItems: "center"
@@ -151,20 +178,22 @@ export default function MenuPage({
                     </div>
                   </div>
 
-                  {/* RIGHT: Tap/Cash prices aligned under headers */}
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "90px 90px",
-                      gap: 18,
-                      textAlign: "center",
-                      fontWeight: 700,
-                      fontSize: 18
-                    }}
-                  >
-                    <div>{it.prices?.[0] ?? ""}</div>
-                    <div>{it.prices?.[1] ?? ""}</div>
-                  </div>
+                  {/* ✅ RIGHT column only for non-farmers-market pages */}
+                  {!isFarmersMarket && (
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "90px 90px",
+                        gap: 18,
+                        textAlign: "center",
+                        fontWeight: 700,
+                        fontSize: 18
+                      }}
+                    >
+                      <div>{it.prices?.[0] ?? ""}</div>
+                      <div>{it.prices?.[1] ?? ""}</div>
+                    </div>
+                  )}
                 </div>
               ))}
             </section>

@@ -29,7 +29,7 @@ export default function HomePage() {
 
         <p className="bioP">
           We bake sourdough loaves, cookies, cinnamon rolls, and occasionally offer seasonal
-          specials! Browse our menu online and place orders through our linked google order form.
+          specials! Browse our menu online and place orders online or through our linked google order form.
           Payment and pick up details are noted within.
         </p>
 
