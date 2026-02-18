@@ -1,31 +1,14 @@
 // app/checkout/success/page.tsx
-"use client";
 
-import { useMemo } from "react";
-import { useSearchParams } from "next/navigation";
-import ContactFooter from "../../components/ContactFooter";
+export const dynamic = "force-dynamic";
 
-export default function SuccessPage() {
-  const searchParams = useSearchParams();
+type Props = {
+  searchParams?: Record<string, string | string[] | undefined>;
+};
 
-  const orderId = useMemo(() => {
-    // Square can return different params depending on flow
-    const candidates = [
-      "orderId",
-      "order_id",
-      "order",
-      "paymentId",
-      "payment_id",
-      "checkoutId",
-      "checkout_id",
-    ];
-
-    for (const key of candidates) {
-      const v = searchParams.get(key);
-      if (v) return v;
-    }
-    return "";
-  }, [searchParams]);
+export default function SuccessPage({ searchParams }: Props) {
+  const raw = searchParams?.orderId;
+  const orderId = Array.isArray(raw) ? raw[0] : raw;
 
   return (
     <main>
@@ -38,19 +21,48 @@ export default function SuccessPage() {
       </div>
 
       <div className="page">
-        <p style={{ fontSize: 22, marginTop: 8, marginBottom: 26 }}>
+        <h2 style={{ letterSpacing: ".06em", textTransform: "uppercase" }}>
           Your payment is being processed.
-        </p>
+        </h2>
 
-        <div style={{ fontSize: 22, fontWeight: 800 }}>
-          Order ID:{" "}
-          <span style={{ fontWeight: 600 }}>
-            {orderId ? orderId : "—"}
-          </span>
+        <div style={{ marginTop: 18, fontSize: 20 }}>
+          <strong>Order ID:</strong>{" "}
+          <span style={{ color: "#333" }}>{orderId || "—"}</span>
         </div>
 
-        {/* ✅ Footer attached */}
-        <ContactFooter />
+        <p style={{ marginTop: 18, color: "#555", lineHeight: 1.7 }}>
+          You should receive an email confirmation shortly. If you don’t see it,
+          check spam or contact us.
+        </p>
+
+        {/* FOOTER (manually inserted) */}
+        <div className="contactBar" style={{ marginTop: 60 }}>
+          <div className="contactLeft">Contact Us</div>
+
+          <div className="contactMid">
+            IG:{" "}
+            <a
+              href="https://www.instagram.com/amiasbakery/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="contactLink"
+            >
+              @amiasbakery
+            </a>
+          </div>
+
+          <div className="contactRight">
+            Email:
+            <div>
+              <a
+                href="mailto:amiasbakery@gmail.com"
+                className="contactLink"
+              >
+                amiasbakery@gmail.com
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );
