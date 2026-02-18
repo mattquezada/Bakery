@@ -1,16 +1,13 @@
 // app/checkout/page.tsx
 import CheckoutClient from "./CheckoutClient";
 
-type SearchParams = {
-  page?: string;
+type Props = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function CheckoutPage({
-  searchParams
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const sp = await searchParams;
-  const pageKey = sp?.page ?? "menu";
-  return <CheckoutClient pageKey={pageKey} />;
+export default async function CheckoutPage({ searchParams }: Props) {
+  const sp = (await searchParams) ?? {};
+  const raw = sp.page;
+  const pageKey = Array.isArray(raw) ? raw[0] : raw;
+  return <CheckoutClient pageKey={pageKey ?? "menu"} />;
 }
