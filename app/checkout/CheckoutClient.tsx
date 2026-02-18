@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { MenuItem, MenuPageKey } from "../lib/types";
 import { fetchMenuItems } from "../lib/menuQueries";
+import ContactFooter from "../components/ContactFooter";
 
 function parsePriceToCents(price: string): number {
   // supports "$12", "12", "$12.50", "12.50"
@@ -331,6 +332,8 @@ export default function CheckoutClient({ pageKey }: { pageKey: MenuPageKey | str
               })}
             </section>
           ))}
+          {/* ✅ Footer attached */}
+        <ContactFooter />
       </div>
     </main>
   );
