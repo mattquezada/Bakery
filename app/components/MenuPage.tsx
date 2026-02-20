@@ -19,10 +19,7 @@ export default function MenuPage({
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Farmers market: no payment options at all
   const showPaymentOptions = pageKey !== "farmers_market";
-
-  // ✅ Farmers market: hide price/cash columns entirely
   const isFarmersMarket = pageKey === "farmers_market";
 
   useEffect(() => {
@@ -69,7 +66,7 @@ export default function MenuPage({
       </div>
 
       <div className="page">
-        {/* ✅ TWO BUTTONS: Card checkout + Google Form (NOT on farmers market) */}
+        {/* Payment buttons (NOT on farmers market) */}
         {showPaymentOptions && (
           <div
             style={{
@@ -103,7 +100,6 @@ export default function MenuPage({
         {!loading &&
           grouped.map(([section, sectionItems]) => (
             <section key={section}>
-              {/* SECTION HEADER: Left title, right Tap/Cash (NOT on farmers market) */}
               <div
                 className="sectionHead"
                 style={{
@@ -114,9 +110,9 @@ export default function MenuPage({
               >
                 <div className="sectionTitle">{section}</div>
 
-                {/* ✅ Hide header labels ONLY for farmers market */}
                 {!isFarmersMarket && (
                   <div
+                    className="menuPriceCols"
                     style={{
                       display: "grid",
                       gridTemplateColumns: "90px 90px",
@@ -169,18 +165,21 @@ export default function MenuPage({
                     <div>
                       <div className="itemName">{it.name}</div>
 
-                      {/* ✅ paragraph breaks from Supabase */}
                       {it.description && (
-                        <div className="itemDesc" style={{ whiteSpace: "pre-line" }}>
+                        <div
+                          className="itemDesc"
+                          style={{ whiteSpace: "pre-line" }}
+                        >
                           {it.description}
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* ✅ RIGHT column only for non-farmers-market pages */}
+                  {/* RIGHT */}
                   {!isFarmersMarket && (
                     <div
+                      className="menuPriceVals"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "90px 90px",
