@@ -1,8 +1,10 @@
 // app/lib/email.ts
-
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const apiKey = process.env.RESEND_API_KEY;
+if (!apiKey) throw new Error("Missing RESEND_API_KEY");
+
+const resend = new Resend(apiKey);
 
 export async function sendOrderEmail({
   to,
@@ -13,8 +15,11 @@ export async function sendOrderEmail({
   subject: string;
   text: string;
 }) {
+  const from = process.env.EMAIL_FROM?.trim();
+  if (!from) throw new Error("Missing EMAIL_FROM");
+
   return resend.emails.send({
-    from: "Amias Bakery <orders@orders.amiasbakery.com>",
+    from,
     to,
     subject,
     text

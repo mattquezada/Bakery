@@ -5,6 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 import type { MenuItem, MenuPageKey } from "../lib/types";
 import { fetchMenuItems } from "../lib/menuQueries";
 import ContactFooter from "../components/ContactFooter";
+import PickupSelector from "../components/PickupSelector";
+
+
+
 
 function parsePriceToCents(price: string): number {
   // supports "$12", "12", "$12.50", "12.50"
@@ -17,6 +21,8 @@ function parsePriceToCents(price: string): number {
 export default function CheckoutClient({ pageKey }: { pageKey: MenuPageKey | string }) {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pickupDate, setPickupDate] = useState("");
+  const [pickupWindow, setPickupWindow] = useState("");
 
   const [cart, setCart] = useState<Record<string, number>>({});
   const [name, setName] = useState("");
@@ -131,13 +137,14 @@ export default function CheckoutClient({ pageKey }: { pageKey: MenuPageKey | str
   if (digitCount < 10) {
     return setError("Please enter a valid phone number.");
   }
+  if (!pickupDate) return setError("Please select a pickup date.");
+  if (!pickupWindow) return setError("Please select a pickup time window.");
 
   if (cartItems.length === 0) return setError("Please add at least one item.");
 
   const payloadItems = cartItems.map((i) => ({
-    name: i.name,
+    id: i.id,
     qty: i.qty,
-    price_cents: i.unit_price_cents
   }));
 
   setCreating(true);
@@ -152,7 +159,9 @@ export default function CheckoutClient({ pageKey }: { pageKey: MenuPageKey | str
           email: emailValue,
           phone: phoneValue
         },
-        items: payloadItems
+        items: payloadItems,
+        pickup_date: pickupDate,
+        pickup_window: pickupWindow
       })
     });
 
@@ -180,6 +189,7 @@ export default function CheckoutClient({ pageKey }: { pageKey: MenuPageKey | str
     setCreating(false);
   }
 }
+
 
   return (
     <main>
@@ -213,6 +223,12 @@ export default function CheckoutClient({ pageKey }: { pageKey: MenuPageKey | str
             style={{ flex: "1 1 220px", padding: 10, border: "1px solid #cfcfcf", borderRadius: 6 }}
           />
         </div>
+        <PickupSelector
+          pickupDate={pickupDate}
+          setPickupDate={setPickupDate}
+          pickupWindow={pickupWindow}
+          setPickupWindow={setPickupWindow}
+        />
 
         {error ? (
           <div style={{ color: "#b00020", marginBottom: 14, fontWeight: 700 }}>

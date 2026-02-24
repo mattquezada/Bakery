@@ -12,7 +12,6 @@ export default function SuccessPage({ searchParams }: Props) {
 
   return (
     <main>
-      {/* HERO — matches Menu */}
       <div className="hero">
         <div>
           <h1 className="heroTitle">THANK YOU!</h1>
@@ -31,11 +30,9 @@ export default function SuccessPage({ searchParams }: Props) {
         </div>
 
         <p style={{ marginTop: 18, color: "#555", lineHeight: 1.7 }}>
-          You should receive an email confirmation shortly. If you don’t see it,
-          check spam or contact us.
+          You should receive an email confirmation shortly. If you don’t see it, check spam or contact us.
         </p>
 
-        {/* FOOTER (manually inserted) */}
         <div className="contactBar" style={{ marginTop: 60 }}>
           <div className="contactLeft">Contact Us</div>
 
@@ -52,15 +49,9 @@ export default function SuccessPage({ searchParams }: Props) {
           </div>
 
           <div className="contactRight">
-            Email:
-            <div>
-              <a
-                href="mailto:amiasbakery@gmail.com"
-                className="contactLink"
-              >
-                amiasbakery@gmail.com
-              </a>
-            </div>
+            <a href="mailto:amiasbakery@gmail.com" className="contactLink">
+              amiasbakery@gmail.com
+            </a>
           </div>
         </div>
       </div>

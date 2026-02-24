@@ -45,11 +45,10 @@ export async function POST(req: Request) {
       .eq("id", orderId);
 
     if (updateError) {
-      // log or handle as needed
       console.error("Failed to update order status:", updateError);
     }
 
-    // Fetch order and its items
+    // Fetch order
     const { data: order, error: orderErr } = await supabase
       .from("orders")
       .select("*")
@@ -61,6 +60,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
+    // Fetch order items (if you also store items JSON on orders, this still works)
     const { data: itemsData, error: itemsErr } = await supabase
       .from("order_items")
       .select("*")
@@ -70,37 +70,53 @@ export async function POST(req: Request) {
       console.error("Failed to load order items:", itemsErr);
     }
 
-    // itemsData may be null, so default to empty array
     const items = itemsData ?? [];
 
-    // Build email body safely
     const itemsList = items.length
       ? items.map((i: any) => `- ${i.qty} x ${i.name}`).join("\n")
       : "- (no line items)";
 
     const totalDollars = ((order.subtotal_cents ?? 0) / 100).toFixed(2);
 
+    // ✅ FIX: Build pickup info from pickup_date + pickup_window (not pickup_note)
+    const pickupText =
+      order.pickup_date && order.pickup_window
+        ? `${order.pickup_date} (${order.pickup_window})`
+        : "-";
+
     const text =
       `NEW PAID ORDER\n\n` +
       `Name: ${order.customer_name}\n` +
       `Email: ${order.customer_email || "-"}\n` +
       `Phone: ${order.customer_phone || "-"}\n` +
-      `Pickup: ${order.pickup_note || "-"}\n\n` +
+      `Pickup: ${pickupText}\n\n` +
       `Items:\n${itemsList}\n\n` +
       `Total: $${totalDollars}\n` +
       `Payment: CARD\n` +
       `Square Payment ID: ${payment.id}\n`;
 
-    // Send notification email
-    await sendOrderEmail({
-      to: process.env.ORDERS_TO_EMAIL || "amiasbakery@gmail.com",
-      subject: `New PAID Order — ${order.customer_name}`,
-      text
-    });
+    // Send notification email (to bakery inbox)
+    // 👇 REPLACE THE EMAIL SEND SECTION BELOW
+try {
+  console.log(
+    "About to send email via Resend. to=",
+    process.env.ORDERS_TO_EMAIL || "amiasbakery@gmail.com"
+  );
 
-    return NextResponse.json({ ok: true });
-  } catch (err: any) {
-    console.error("Webhook handler error:", err);
-    return NextResponse.json({ error: err?.message || "unknown error" }, { status: 500 });
-  }
+  await sendOrderEmail({
+    to: process.env.ORDERS_TO_EMAIL || "amiasbakery@gmail.com",
+    subject: `New PAID Order — ${order.customer_name}`,
+    text
+  });
+
+  console.log("Resend email sendOrderEmail() returned success");
+} catch (e: any) {
+  console.error("Resend sendOrderEmail() failed:", e?.message || e, e);
 }
+
+return NextResponse.json({ ok: true });
+} catch (err: any) {
+  console.error("Webhook handler error:", err);
+  return NextResponse.json({ error: err?.message || "unknown error" }, { status: 500 });
+  }
+}  
