@@ -211,7 +211,7 @@ export async function POST(req: Request) {
 
       // If Square call fails, release slot (best-effort)
       try {
-        await supabase.rpc("release_pickup_slot", { p_slot_id: slotId }).catch(() => null);
+        await supabase.rpc("release_pickup_slot", { p_slot_id: slotId });
       } catch {
         /* ignore */
       }
