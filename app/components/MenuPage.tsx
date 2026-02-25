@@ -90,7 +90,7 @@ export default function MenuPage({
               style={{ display: "inline-flex", alignItems: "center" }}
               onClick={() => window.open(getOrderUrl(), "_blank")}
             >
-              Order via Google Form
+              Pay by Zelle, Venmo, or Cash
             </button>
           </div>
         )}
