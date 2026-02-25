@@ -18,8 +18,8 @@ function nextWeekendDates(count = 8): string[] {
     d.setDate(now.getDate() + i);
     const dow = d.getDay(); // 0 Sun, 6 Sat
 
-    // Friday (5) or Saturday (6)
-    if (dow === 5 || dow === 6) {
+    // Saturday (6) or Sunday (0)
+    if (dow === 6 || dow === 0) {
       out.push(d.toISOString().slice(0, 10));
     }
   }
