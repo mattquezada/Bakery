@@ -1,4 +1,3 @@
-// app/components/MenuPage.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -32,12 +31,64 @@ export default function MenuPage({
     const map = new Map<string, MenuItem[]>();
 
     for (const it of items) {
-      if (!map.has(it.section)) map.set(it.section, []);
-      map.get(it.section)!.push(it);
+      const section = it.section || "Menu";
+      if (!map.has(section)) map.set(section, []);
+      map.get(section)!.push(it);
     }
 
-    const preferredOrder = ["cookies", "sourdough loaves", "cinnamon rolls"];
     const entries = Array.from(map.entries());
+
+    // ✅ SORT FARMERS MARKET BY REAL DATE
+    if (isFarmersMarket) {
+      const monthIndex: Record<string, number> = {
+        january: 0,
+        february: 1,
+        march: 2,
+        april: 3,
+        may: 4,
+        june: 5,
+        july: 6,
+        august: 7,
+        september: 8,
+        october: 9,
+        november: 10,
+        december: 11
+      };
+
+      const parseSectionDate = (section: string): number => {
+        const raw = section.trim().toLowerCase();
+
+        const match = raw.match(
+          /(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})/
+        );
+
+        if (!match) return Number.POSITIVE_INFINITY;
+
+        const month = monthIndex[match[1]];
+        const day = Number(match[2]);
+
+        const now = new Date();
+        let year = now.getFullYear();
+
+        const candidate = new Date(year, month, day);
+
+        // If date already passed this year, assume next year
+        if (
+          candidate.getTime() <
+          new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+        ) {
+          year += 1;
+        }
+
+        return new Date(year, month, day).getTime();
+      };
+
+      entries.sort(([a], [b]) => parseSectionDate(a) - parseSectionDate(b));
+      return entries;
+    }
+
+    // ✅ DEFAULT MENU SORT (unchanged)
+    const preferredOrder = ["cookies", "sourdough loaves", "cinnamon rolls"];
 
     entries.sort(([a], [b]) => {
       const aKey = a.toLowerCase().trim();
@@ -53,7 +104,7 @@ export default function MenuPage({
     });
 
     return entries;
-  }, [items]);
+  }, [items, isFarmersMarket]);
 
   return (
     <main>
@@ -66,7 +117,6 @@ export default function MenuPage({
       </div>
 
       <div className="page">
-        {/* Payment buttons (NOT on farmers market) */}
         {showPaymentOptions && (
           <div
             style={{
@@ -144,7 +194,6 @@ export default function MenuPage({
                     alignItems: "center"
                   }}
                 >
-                  {/* LEFT */}
                   <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
                     {it.image_url && (
                       <img
@@ -176,7 +225,6 @@ export default function MenuPage({
                     </div>
                   </div>
 
-                  {/* RIGHT */}
                   {!isFarmersMarket && (
                     <div
                       className="menuPriceVals"

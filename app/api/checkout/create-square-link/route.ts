@@ -41,9 +41,9 @@ type ReqBody = {
   customer: { name: string; email?: string; phone?: string };
   // client sends only ids + qty; server will fetch prices
   items: Array<{ id: string; qty: number }>;
-  // pick a weekend date YYYY-MM-DD and one of allowed windows
+  // pick a weekend date YYYY-MM-DD and pickup_window is any string stored in pickup_slots
   pickup_date: string;
-  pickup_window: "2-3 PM" | "3-4 PM" | "After-hours pickup";
+  pickup_window: string;
   page?: string;
 };
 
@@ -55,7 +55,6 @@ export async function POST(req: Request) {
     const baseUrl = getBaseUrl(env);
 
     const body = (await req.json().catch(() => null)) as ReqBody | null;
-
     if (!body) return NextResponse.json({ error: "Bad request: missing body" }, { status: 400 });
 
     const customerName = (body.customer?.name || "").trim();
@@ -81,7 +80,9 @@ export async function POST(req: Request) {
     if (!body.pickup_date || !/^\d{4}-\d{2}-\d{2}$/.test(body.pickup_date)) {
       return NextResponse.json({ error: "Invalid pickup_date" }, { status: 400 });
     }
-    if (!["2-3 PM", "3-4 PM", "After-hours pickup"].includes(body.pickup_window)) {
+
+    const pickupWindow = (body.pickup_window || "").trim();
+    if (!pickupWindow) {
       return NextResponse.json({ error: "Invalid pickup_window" }, { status: 400 });
     }
 
@@ -120,10 +121,10 @@ export async function POST(req: Request) {
 
     const subtotalCents = normalized.reduce((s, i) => s + i.qty * i.unit_price_cents, 0);
 
-    // Reserve pickup slot atomically via RPC
+    // Reserve pickup slot atomically via RPC (this validates date+window exist and enforces blackouts)
     const { data: slotId, error: slotErr } = await supabase.rpc("reserve_pickup_slot", {
       p_pickup_date: body.pickup_date,
-      p_pickup_window: body.pickup_window
+      p_pickup_window: pickupWindow
     });
 
     if (slotErr) {
@@ -146,7 +147,7 @@ export async function POST(req: Request) {
         total_cents: subtotalCents,
         pickup_slot_id: slotId,
         pickup_date: body.pickup_date,
-        pickup_window: body.pickup_window
+        pickup_window: pickupWindow
       })
       .select("id")
       .single();
@@ -167,7 +168,7 @@ export async function POST(req: Request) {
       }
     }));
 
-    const pickupNote = `Pickup: ${body.pickup_date} (${body.pickup_window})`;
+    const pickupNote = `Pickup: ${body.pickup_date} (${pickupWindow})`;
     const orderNote = `amias_order:${orderId}\n${pickupNote}`;
 
     const origin = req.headers.get("origin") || getSiteUrl(env);
@@ -186,7 +187,7 @@ export async function POST(req: Request) {
         redirect_url: successUrl
       }
     };
-    const pickupWindowNormalized = body.pickup_window.replaceAll("–", "-").trim();
+
     const squareRes = await fetch(`${baseUrl}/v2/online-checkout/payment-links`, {
       method: "POST",
       headers: {
