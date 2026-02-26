@@ -16,6 +16,7 @@ export async function POST(req: Request) {
       .digest("base64");
 
     if (!signature || signature !== expected) {
+      console.warn("Invalid webhook signature");
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
@@ -33,6 +34,7 @@ export async function POST(req: Request) {
 
     if (!orderId) {
       // nothing to tie to our DB
+      console.warn("Webhook received but no orderId in note");
       return NextResponse.json({ ok: true });
     }
 
@@ -46,9 +48,10 @@ export async function POST(req: Request) {
 
     if (updateError) {
       console.error("Failed to update order status:", updateError);
+      // keep going — we still try to email / notify
     }
 
-    // Fetch order
+    // Fetch order (we will read items from orders.items)
     const { data: order, error: orderErr } = await supabase
       .from("orders")
       .select("*")
@@ -60,63 +63,45 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    // Fetch order items (if you also store items JSON on orders, this still works)
-    const { data: itemsData, error: itemsErr } = await supabase
-      .from("order_items")
-      .select("*")
-      .eq("order_id", orderId);
+    // Read items from orders.items JSON (fallback to empty array)
+    const items = Array.isArray((order as any).items) ? (order as any).items : [];
 
-    if (itemsErr) {
-      console.error("Failed to load order items:", itemsErr);
-    }
-
-    const items = itemsData ?? [];
-
+    // Build items list for email (safe)
     const itemsList = items.length
-      ? items.map((i: any) => `- ${i.qty} x ${i.name}`).join("\n")
+      ? items.map((i: any) => `- ${i.qty ?? 1} x ${i.name ?? "(item)"}`).join("\n")
       : "- (no line items)";
 
     const totalDollars = ((order.subtotal_cents ?? 0) / 100).toFixed(2);
 
-    // ✅ FIX: Build pickup info from pickup_date + pickup_window (not pickup_note)
-    const pickupText =
-      order.pickup_date && order.pickup_window
-        ? `${order.pickup_date} (${order.pickup_window})`
-        : "-";
+    const pickupNote = order.pickup_note ?? `${order.pickup_date ?? "-"} (${order.pickup_window ?? "-"})`;
 
     const text =
       `NEW PAID ORDER\n\n` +
       `Name: ${order.customer_name}\n` +
       `Email: ${order.customer_email || "-"}\n` +
       `Phone: ${order.customer_phone || "-"}\n` +
-      `Pickup: ${pickupText}\n\n` +
+      `Pickup: ${pickupNote}\n\n` +
       `Items:\n${itemsList}\n\n` +
       `Total: $${totalDollars}\n` +
       `Payment: CARD\n` +
       `Square Payment ID: ${payment.id}\n`;
 
     // Send notification email (to bakery inbox)
-    // 👇 REPLACE THE EMAIL SEND SECTION BELOW
-try {
-  console.log(
-    "About to send email via Resend. to=",
-    process.env.ORDERS_TO_EMAIL || "amiasbakery@gmail.com"
-  );
+    try {
+      console.log("About to send email via Resend. to=", process.env.ORDERS_TO_EMAIL || "amiasbakery@gmail.com");
+      await sendOrderEmail({
+        to: process.env.ORDERS_TO_EMAIL || "amiasbakery@gmail.com",
+        subject: `New PAID Order — ${order.customer_name}`,
+        text
+      });
+      console.log("Resend email sendOrderEmail() returned success");
+    } catch (e: any) {
+      console.error("Resend sendOrderEmail() failed:", e?.message || e, e);
+    }
 
-  await sendOrderEmail({
-    to: process.env.ORDERS_TO_EMAIL || "amiasbakery@gmail.com",
-    subject: `New PAID Order — ${order.customer_name}`,
-    text
-  });
-
-  console.log("Resend email sendOrderEmail() returned success");
-} catch (e: any) {
-  console.error("Resend sendOrderEmail() failed:", e?.message || e, e);
-}
-
-return NextResponse.json({ ok: true });
-} catch (err: any) {
-  console.error("Webhook handler error:", err);
-  return NextResponse.json({ error: err?.message || "unknown error" }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  } catch (err: any) {
+    console.error("Webhook handler error:", err);
+    return NextResponse.json({ error: err?.message || "unknown error" }, { status: 500 });
   }
-}  
+}
